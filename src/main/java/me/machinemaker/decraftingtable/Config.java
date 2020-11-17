@@ -25,4 +25,10 @@ public class Config extends BaseConfig {
 
     @Path("stone-combiner.exp-cost")
     public Integer combinerExpCost = 0;
+
+    @Path("cooler.enabled")
+    public Boolean coolerEnabled = true;
+
+    @Path("cooler.exp-cost")
+    public Integer coolerExpCost = 0;
 }

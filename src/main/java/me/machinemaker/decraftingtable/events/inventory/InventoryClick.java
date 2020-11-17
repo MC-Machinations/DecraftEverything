@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -55,10 +56,11 @@ public class InventoryClick implements Listener {
             return;
         }
 
-        if (event.getRawSlot() != type.getInputSlot() || isNull(event.getCursor()) || event.getCursor().getType() == Material.AIR) return;
+        ItemStack cursor = event.getCursor();
+        if (event.getRawSlot() != type.getInputSlot() || cursor == null || cursor.getType() == Material.AIR) return;
 
         if (type == Inventories.DISENCHANTER) {
-            ItemStack tool = event.getCursor().clone();
+            ItemStack tool = cursor.clone();
             if (tool.getEnchantments().isEmpty()) return;
             ItemStack enchantedBook = new ItemStack(Material.ENCHANTED_BOOK);
             EnchantmentStorageMeta meta = (EnchantmentStorageMeta) enchantedBook.getItemMeta();
@@ -77,7 +79,7 @@ public class InventoryClick implements Listener {
             return;
         }
 
-        List<Recipe> recipes = Bukkit.getRecipesFor(event.getCursor()).stream().filter(type::isValidRecipe).collect(Collectors.toList());
+        List<Recipe> recipes = Bukkit.getRecipesFor(cursor).stream().filter(type::isValidRecipe).collect(Collectors.toList());
         if (recipes.isEmpty()) {
             event.getWhoClicked().sendMessage("No recipe for that"); // TODO: 6/19/2020 Lang
             return;
@@ -87,16 +89,16 @@ public class InventoryClick implements Listener {
             return;
         }
         Recipe usedRecipe = recipes.get(0);
-        if (event.getCursor().getAmount() < usedRecipe.getResult().getAmount()) {
+        if (cursor.getAmount() < usedRecipe.getResult().getAmount()) {
             event.getWhoClicked().sendMessage(String.format("Requires more input: %d", usedRecipe.getResult().getAmount())); // TODO: 6/19/2020 Lang
             return;
         }
-        int decraftAmount = 0;
-        int newInputAmount = 0;
+        int decraftAmount;
+        int newInputAmount;
         switch (event.getAction()) {
             case PLACE_ALL:
-                decraftAmount = (int) Math.floor((double) event.getCursor().getAmount() / (double) usedRecipe.getResult().getAmount());
-                newInputAmount = event.getCursor().getAmount() - (usedRecipe.getResult().getAmount() * decraftAmount);
+                decraftAmount = (int) Math.floor((double) cursor.getAmount() / (double) usedRecipe.getResult().getAmount());
+                newInputAmount = cursor.getAmount() - (usedRecipe.getResult().getAmount() * decraftAmount);
                 break;
             case PLACE_ONE:
                 decraftAmount = 1;
@@ -140,7 +142,7 @@ public class InventoryClick implements Listener {
                     }
                 }
 
-                ItemStack inputStack = event.getCursor().clone();
+                ItemStack inputStack = cursor.clone();
                 final int finalNewInputAmount = newInputAmount;
                 Bukkit.getScheduler().runTask(this.plugin, () -> {
                     ((Player) event.getWhoClicked()).updateInventory();
@@ -150,9 +152,9 @@ public class InventoryClick implements Listener {
                 });
                 break;
             }
-            case STONE_COMBINER:
+            case STONE_COMBINER: {
                 StonecuttingRecipe recipe = (StonecuttingRecipe) usedRecipe;
-                ItemStack inputStack = event.getCursor().clone();
+                ItemStack inputStack = cursor.clone();
                 ItemStack outputStack = recipe.getInput().clone();
                 outputStack.setAmount(recipe.getInput().getAmount() * decraftAmount);
                 inputStack.setAmount(newInputAmount);
@@ -162,6 +164,19 @@ public class InventoryClick implements Listener {
 //                    ((Player) event.getWhoClicked()).updateInventory();
                     // TODO: 7/17/2020 Lang
                 });
+                break;
+            }
+            case COOLER:
+                FurnaceRecipe recipe = (FurnaceRecipe) usedRecipe;
+                ItemStack inputStack = cursor.clone();
+                ItemStack outputStack = recipe.getInput().clone();
+                outputStack.setAmount(recipe.getInput().getAmount() * decraftAmount);
+                inputStack.setAmount(newInputAmount);
+                Bukkit.getScheduler().runTask(this.plugin, () -> {
+                    top.setItem(11, outputStack);
+                    top.setItem(15, inputStack);
+                });
+                break;
 
         }
     }

@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Tag;
+import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.Recipe;
@@ -25,7 +26,8 @@ public enum Inventories {
 
     DECRAFTING(ChatColor.BLUE + "Decrafting Table", 25, 45, Sets.newHashSet(11, 12, 13, 20, 21, 22, 29, 30, 31), recipe -> recipe instanceof ShapedRecipe || recipe instanceof ShapelessRecipe, config -> config.decraftExpCost, config -> config.decraftEnabled, material -> material == Material.CRAFTING_TABLE),
     DISENCHANTER(ChatColor.BLUE + "Dis-Enchanter", 15, 27, Sets.newHashSet(10, 12), recipe -> true, config -> config.disenchanterExpCost, config -> config.disenchanterEnabled, Tag.ANVIL::isTagged),
-    STONE_COMBINER(ChatColor.BLUE + "Stone Combiner", 15, 27, Sets.newHashSet(11), recipe -> recipe instanceof StonecuttingRecipe, config -> config.combinerExpCost, config -> config.combinerEnabled, material -> material == Material.STONECUTTER)
+    STONE_COMBINER(ChatColor.BLUE + "Stone Combiner", 15, 27, Sets.newHashSet(11), recipe -> recipe instanceof StonecuttingRecipe, config -> config.combinerExpCost, config -> config.combinerEnabled, material -> material == Material.STONECUTTER),
+    COOLER(ChatColor.BLUE + "❄ Cooler", 15, 27, Sets.newHashSet(11), recipe -> recipe instanceof FurnaceRecipe, config -> config.coolerExpCost, config -> config.coolerEnabled, material -> material == Material.FURNACE),
     ;
 
     @Inject
